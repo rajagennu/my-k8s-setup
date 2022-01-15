@@ -1,0 +1,68 @@
+---
+- hosts: all
+  gather_facts: no
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: turnoff swap
+      shell:
+        cmd: swapoff -a
+    
+    - name: enable netfilter
+      modprobe:
+        name: br_netfilter
+
+    - name: load modules at startup
+      lineinfile:
+        path: /etc/modules-load.d/k8s.conf
+        line: br_netfilter
+        create: yes
+
+    - name: enable bridge traffic 
+      lineinfile:
+        path: /etc/sysctl.d/k8s.conf
+        line: "{{ item }}"
+        create: yes
+      with_items:
+        - net.bridge.bridge-nf-call-ip6tables = 1
+        - net.bridge.bridge-nf-call-iptables = 1
+
+    - name: update the systemctl to load the changes
+      shell:
+        cmd: sysctl --system
+
+    - name: Add GPG Key
+      shell:
+        cmd: curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+
+    - name: Add k8s repo
+      shell:
+        cmd: echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+    - name: Install basic packages
+      apt:
+        update_cache: yes
+        pkg:
+          - apt-transport-https 
+          - ca-certificates 
+          - curl
+    
+    - name: Install Kubernetes packages
+      apt:
+        update_cache: yes
+        pkg:
+          - kubectl 
+          - kubeadm 
+          - kubelet
+        
+    - name: Hold the packages from upgrade
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      with_items:
+          - kubectl 
+          - kubeadm 
+          - kubelet
+      

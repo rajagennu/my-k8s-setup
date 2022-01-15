@@ -1,0 +1,13 @@
+[controlnode]
+192.168.56.10
+
+[nodes]
+192.168.56.21
+192.168.56.22
+
+[all:children]
+controlnode
+nodes
+
+[all:vars]
+ansible_ssh_user = vagrant
