@@ -57,9 +57,9 @@
       apt:
         update_cache: yes
         pkg:
-          - kubectl=1.23.1
-          - kubeadm=1.23.1
-          - kubelet=1.23.1
+          - kubectl=1.23.1-00
+          - kubeadm=1.23.1-00
+          - kubelet=1.23.1-00
         
     - name: Hold the packages from upgrade
       dpkg_selections:
