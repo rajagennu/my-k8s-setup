@@ -8,6 +8,10 @@
     - name: turnoff swap
       shell:
         cmd: swapoff -a
+
+    - name: Removing swap mount from /etc/fstab
+      shell:
+        cmd: sed -i '/swap/d' /etc/fstab
     
     - name: enable netfilter
       modprobe:
@@ -53,9 +57,9 @@
       apt:
         update_cache: yes
         pkg:
-          - kubectl 
-          - kubeadm 
-          - kubelet
+          - kubectl=1.23.1
+          - kubeadm=1.23.1
+          - kubelet=1.23.1
         
     - name: Hold the packages from upgrade
       dpkg_selections:
